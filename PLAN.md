@@ -13,7 +13,7 @@ never auto-marked done.
 ## Before starting the goal (do these yourself)
 
 - [x] Create a Turso database; put `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in `.env`
-- [ ] Create a paid-tier Gemini key; put `GEMINI_API_KEY` and `GEMINI_MODEL` in `.env`
+- [x] Create a paid-tier Gemini key; put `GEMINI_API_KEY` and `GEMINI_MODEL` in `.env`
 - [x] Create `.gitignore` containing `.env`, then `git init` and make a first commit
 - [x] Write `cafes/hashtag.md` yourself (10 to 15 lines: menu, books, seating, vibe; no invented details)
 - [x] Run this once in the Turso shell:
