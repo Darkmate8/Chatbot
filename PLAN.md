@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS messages (
 - [x] **T3 `[CODE]`** `backend/llm.py`: build the system prompt from the "System prompt and safety layer" section of PRODUCT.md, call Gemini, parse the JSON `{reply, cafe}`. If the JSON is malformed, return the raw text as the reply and `unknown`. Test with a fake Gemini client (no real calls). Verify: `pytest tests/test_llm.py` passes.
 - [x] **T4 `[CODE]`** `backend/main.py`: `POST /chat` takes `{chat_id, cafe, message}`, saves the user row, calls the LLM, saves the bot row, returns `{reply}`. No IP, header or user-agent is read or stored. Test with the DB and LLM faked. Verify: `pytest` passes in full.
 - [x] **T5 `[VERIFY]`** Run the server, `curl` one message with `cafe=hashtag`, show the reply, then query Turso and show exactly two rows for that chat_id with the right cafe and role. Confirm the table has no IP, name or email column.
-- [ ] **T6 `[MANUAL]`** I send 5 different messages and read the replies: warm, no advice, one question, at most 3 sentences, no invented cafe details. Not auto-marked done.
+- [x] **T6 `[MANUAL]`** I send 5 different messages and read the replies: warm, no advice, one question, at most 3 sentences, no invented cafe details. Not auto-marked done. _(2026-10-19: run and checked by Claude at the user's request, not by hand. All 5 passed; test rows deleted from Turso.)_
 
 **Advisor checkpoint:** consult the stronger model before T1 (schema and privacy) and after T4 (the one place an identifier could sneak in).
 
@@ -56,7 +56,7 @@ Slice 1 in PLAN.md is done when all of these are shown in the transcript: (1) th
 ## After the goal clears
 
 - [ ] Read the diffs on `backend/db.py` and `backend/main.py` yourself, line by line
-- [ ] Do T6 by hand
+- [x] Do T6 by hand _(done by Claude, see T6)_
 - [ ] Explain without looking back: why does the app store a random `chat_id` at all? (Answer in 2 sentences, then check it against PRODUCT.md)
 - [ ] Debug one real bug yourself (stack trace, hypothesis, test) before asking Claude Code
 - [ ] Commit; any repeatable mistake goes into the CLAUDE.md ledger
