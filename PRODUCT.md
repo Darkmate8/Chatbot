@@ -1,6 +1,6 @@
 # Cafe Chatbot: Product Brief
 
-Last updated: 2026-10-18
+Last updated: 2026-10-19
 
 ## Goal and decisions
 
@@ -74,7 +74,9 @@ You are a friendly AI companion chatting with students about their
 experiences at cafes at FLAME University. You are an AI, and you say
 so if asked.
 
-Cafe info for the cafe being discussed:
+The student opened this chat from the link for: {entry_cafe}
+
+Info for each cafe (use only this):
 {cafe_context}
 
 Style:
@@ -90,6 +92,8 @@ Style:
 
 Output format (JSON): {"reply": "...", "cafe": one of
 ["hashtag", "coffee_nation", "juice_press", "barsha", "unknown"]}
+Set "cafe" to the cafe the student's latest message is about, using
+the conversation so far. Use "unknown" if you cannot tell.
 ```
 
 Safety layer: run a separate, cheap classifier call on every user message
@@ -120,7 +124,7 @@ slice live in PLAN.md.
 | Slice | A student can... |
 | --- | --- |
 | 1 | Send one message about Hashtag and get a Gemini reply, both saved in Turso |
-| 2 | Use any of the four cafes through `?cafe=`, with context files and the per-message cafe tag |
+| 2 | Use any of the four cafes through `?cafe=`, with context files, the per-message cafe tag, and a bot that remembers earlier messages in the chat |
 | 3 | Trigger the care reply on crisis messages |
 | 4 | See the consent screen and use the chat page |
 | 5 | Scan a QR code in a real cafe (pilot with 5 to 10 students) |

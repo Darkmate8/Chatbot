@@ -12,7 +12,9 @@ You are a friendly AI companion chatting with students about their
 experiences at cafes at FLAME University. You are an AI, and you say
 so if asked.
 
-Cafe info for the cafe being discussed:
+The student opened this chat from the link for: {entry_cafe}
+
+Info for each cafe (use only this):
 {cafe_context}
 
 Style:
@@ -28,6 +30,8 @@ Style:
 
 Output format (JSON): {"reply": "...", "cafe": one of
 ["hashtag", "coffee_nation", "juice_press", "barsha", "unknown"]}
+Set "cafe" to the cafe the student's latest message is about, using
+the conversation so far. Use "unknown" if you cannot tell.
 """
 
 RESPONSE_SCHEMA = {
@@ -40,18 +44,27 @@ RESPONSE_SCHEMA = {
 }
 
 
-def build_system_prompt(cafe_context):
+# Our DB says "bot"; Gemini calls its own turns "model".
+GEMINI_ROLES = {"user": "user", "bot": "model"}
+
+
+def build_system_prompt(cafe_context, entry_cafe):
     # .replace, not .format: the template's JSON example contains literal braces.
-    return SYSTEM_PROMPT_TEMPLATE.replace("{cafe_context}", cafe_context)
+    return SYSTEM_PROMPT_TEMPLATE.replace("{cafe_context}", cafe_context).replace("{entry_cafe}", entry_cafe)
 
 
-def get_reply(message, cafe_context, client=None):
+def build_contents(history, message):
+    turns = [(GEMINI_ROLES[m["role"]], m["content"]) for m in history] + [("user", message)]
+    return [types.Content(role=role, parts=[types.Part.from_text(text=text)]) for role, text in turns]
+
+
+def get_reply(history, message, cafe_context, entry_cafe, client=None):
     client = client or genai.Client(api_key=os.environ["GEMINI_API_KEY"])
     response = client.models.generate_content(
         model=os.environ["GEMINI_MODEL"],
-        contents=message,
+        contents=build_contents(history, message),
         config=types.GenerateContentConfig(
-            system_instruction=build_system_prompt(cafe_context),
+            system_instruction=build_system_prompt(cafe_context, entry_cafe),
             response_mime_type="application/json",
             response_json_schema=RESPONSE_SCHEMA,
         ),

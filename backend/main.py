@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import UUID4, BaseModel
@@ -19,14 +21,15 @@ class ChatRequest(BaseModel):
 # client IP, user agent or any other header.
 @app.post("/chat")
 def chat(body: ChatRequest):
-    try:
-        cafe_context = cafes.load_cafe_context(body.cafe)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    if body.cafe not in cafes.CAFES:
+        raise HTTPException(status_code=400, detail=f"Unknown cafe: {body.cafe!r}. Expected one of {sorted(cafes.CAFES)}")
 
+    received_at = datetime.now(timezone.utc)
     chat_id = str(body.chat_id)
-    db.insert_message(chat_id, "user", body.message, body.cafe)
-    # Slice 1 stores the cafe from the request; Gemini's cafe tag is used in Slice 2.
-    reply, _ = llm.get_reply(body.message, cafe_context)
-    db.insert_message(chat_id, "bot", reply, body.cafe)
+    history = db.get_messages(chat_id)
+    reply, cafe_tag = llm.get_reply(history, body.message, cafes.load_all_cafe_contexts(), body.cafe)
+    # The user row is saved after the Gemini call because it needs Gemini's cafe tag,
+    # but it keeps the time the message arrived.
+    db.insert_message(chat_id, "user", body.message, cafe_tag, now=received_at)
+    db.insert_message(chat_id, "bot", reply, cafe_tag)
     return {"reply": reply}

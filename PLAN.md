@@ -1,62 +1,27 @@
-# Slice 1: one message in, one reply out, both saved
+# Slice 2: any of the four cafes, per-message cafe tag, chat memory
 
-**A student can:** send one message about Hashtag and get a Gemini reply,
-with both messages saved in Turso. Ugly but end-to-end.
+Slice 1 is done (commits ad15393, 3384486; its plan is in git history).
 
-**Out of scope (later slices):** web page, consent screen, other three cafes,
-safety check, voice, gender, cafe auto-tagging.
+**A student can:** chat about any of the four cafes through `cafe` in the
+request (the `?cafe=` link value), talk across several turns with the bot
+remembering earlier messages, and compare cafes in one chat. Each message row
+stores the cafe that message is about, as tagged by Gemini.
 
-Proof tags: `[CODE]` = provable from the diff and test output.
-`[VERIFY]` = needs the app actually running. `[MANUAL]` = I check by hand;
-never auto-marked done.
+**Decisions (2026-10-19):**
+- All four cafe files go into the system prompt every turn. A missing file is
+  shown to Gemini as "no info yet" so it never invents details.
+- Gemini's `cafe` tag is stored on both rows of a turn. `unknown` stays `unknown`.
+- The chat's earlier messages (from Turso) are sent with each new message.
+- The user row keeps the time the message arrived, even though it is saved
+  after the Gemini call (it needs Gemini's tag).
 
-## Before starting the goal (do these yourself)
+**Out of scope (later slices):** no-`?cafe=` flow where the bot asks which
+cafe, web page, consent screen, safety check, voice, gender.
 
-- [x] Create a Turso database; put `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in `.env`
-- [x] Create a paid-tier Gemini key; put `GEMINI_API_KEY` and `GEMINI_MODEL` in `.env`
-- [x] Create `.gitignore` containing `.env`, then `git init` and make a first commit
-- [x] Write `cafes/hashtag.md` yourself (10 to 15 lines: menu, books, seating, vibe; no invented details)
-- [x] Run this once in the Turso shell:
+## Tasks
 
-```sql
-CREATE TABLE IF NOT EXISTS messages (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  chat_id TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('user', 'bot')),
-  content TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  local_hour INTEGER NOT NULL,
-  cafe TEXT NOT NULL,
-  input_mode TEXT NOT NULL DEFAULT 'text',
-  gender TEXT,
-  gender_source TEXT,
-  consent_version TEXT
-);
-```
-
-- [x] Commit again (this is your rollback point)
-
-## Tasks (each 2 to 5 minutes)
-
-- [x] **T1 `[CODE]`** `backend/db.py`: `insert_message(chat_id, role, content, cafe)` (fills `created_at` in UTC and `local_hour` in IST) and `get_messages(chat_id)`. Test: `tests/test_db.py` inserts two rows with a random chat_id, reads them back, deletes them. Verify: `pytest tests/test_db.py` passes.
-- [x] **T2 `[CODE]`** `backend/cafes.py`: `load_cafe_context(cafe)` reads `cafes/<cafe>.md`; an unknown cafe raises a clear error. Test: `tests/test_cafes.py`. Verify: `pytest tests/test_cafes.py` passes.
-- [x] **T3 `[CODE]`** `backend/llm.py`: build the system prompt from the "System prompt and safety layer" section of PRODUCT.md, call Gemini, parse the JSON `{reply, cafe}`. If the JSON is malformed, return the raw text as the reply and `unknown`. Test with a fake Gemini client (no real calls). Verify: `pytest tests/test_llm.py` passes.
-- [x] **T4 `[CODE]`** `backend/main.py`: `POST /chat` takes `{chat_id, cafe, message}`, saves the user row, calls the LLM, saves the bot row, returns `{reply}`. No IP, header or user-agent is read or stored. Test with the DB and LLM faked. Verify: `pytest` passes in full.
-- [x] **T5 `[VERIFY]`** Run the server, `curl` one message with `cafe=hashtag`, show the reply, then query Turso and show exactly two rows for that chat_id with the right cafe and role. Confirm the table has no IP, name or email column.
-- [x] **T6 `[MANUAL]`** I send 5 different messages and read the replies: warm, no advice, one question, at most 3 sentences, no invented cafe details. Not auto-marked done. _(2026-10-19: run and checked by Claude at the user's request, not by hand. All 5 passed; test rows deleted from Turso.)_
-
-**Advisor checkpoint:** consult the stronger model before T1 (schema and privacy) and after T4 (the one place an identifier could sneak in).
-
-## Goal condition (paste into `/goal`)
-
-```
-Slice 1 in PLAN.md is done when all of these are shown in the transcript: (1) the full `pytest` run passes with 0 failures; (2) a curl POST to /chat with cafe=hashtag returned a JSON reply; (3) a query on the messages table shows exactly one user row and one bot row for that chat_id, with cafe=hashtag, and the table has no column for IP, name or email; (4) tasks T1 to T5 are ticked in PLAN.md. Do not tick T6. Stop after 20 turns if not done.
-```
-
-## After the goal clears
-
-- [ ] Read the diffs on `backend/db.py` and `backend/main.py` yourself, line by line
-- [x] Do T6 by hand _(done by Claude, see T6)_
-- [ ] Explain without looking back: why does the app store a random `chat_id` at all? (Answer in 2 sentences, then check it against PRODUCT.md)
-- [ ] Debug one real bug yourself (stack trace, hypothesis, test) before asking Claude Code
-- [ ] Commit; any repeatable mistake goes into the CLAUDE.md ledger
+- [x] **T1 `[CODE]`** `backend/cafes.py`: `load_all_cafe_contexts()` returns all four cafes' info, labelled; a missing file becomes a "no info yet" note. Verify: `pytest tests/test_cafes.py`.
+- [x] **T2 `[CODE]`** `backend/llm.py`: prompt from PRODUCT.md (all cafes + the cafe the link came from + tag rule); `get_reply` sends earlier messages as Gemini history. Verify: `pytest tests/test_llm.py`.
+- [x] **T3 `[CODE]`** `backend/main.py`: accept any of the four cafes; load history; call LLM; save both rows with Gemini's tag; user row keeps its arrival time. Verify: `pytest` passes in full.
+- [x] **T4 `[VERIFY]`** Real server: a 2-turn chat from `cafe=hashtag` that brings up Coffee Nation in turn 2. Show the bot remembers turn 1, and the rows are tagged hashtag then coffee_nation. Delete the test rows after.
+- [ ] **T5 `[MANUAL]`** Write `cafes/coffee_nation.md`, `juice_press.md`, `barsha.md` (same format as hashtag.md, no invented details), then chat once per cafe and read the replies.
