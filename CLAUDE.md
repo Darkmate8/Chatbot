@@ -7,7 +7,7 @@ in PLAN.md. Do not duplicate either file here.
 
 ## Commands (update when they change)
 - Setup: `python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`
-- Run: `uvicorn backend.main:app --reload`
+- Run: `uvicorn backend.main:app --reload --no-access-log` (the access log prints client IPs; never drop this flag)
 - Test: `pytest`
 
 ## Hard rules (never break; if a change would, stop and ask)

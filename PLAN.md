@@ -38,11 +38,11 @@ CREATE TABLE IF NOT EXISTS messages (
 
 ## Tasks (each 2 to 5 minutes)
 
-- [ ] **T1 `[CODE]`** `backend/db.py`: `insert_message(chat_id, role, content, cafe)` (fills `created_at` in UTC and `local_hour` in IST) and `get_messages(chat_id)`. Test: `tests/test_db.py` inserts two rows with a random chat_id, reads them back, deletes them. Verify: `pytest tests/test_db.py` passes.
-- [ ] **T2 `[CODE]`** `backend/cafes.py`: `load_cafe_context(cafe)` reads `cafes/<cafe>.md`; an unknown cafe raises a clear error. Test: `tests/test_cafes.py`. Verify: `pytest tests/test_cafes.py` passes.
-- [ ] **T3 `[CODE]`** `backend/llm.py`: build the system prompt from the "System prompt and safety layer" section of PRODUCT.md, call Gemini, parse the JSON `{reply, cafe}`. If the JSON is malformed, return the raw text as the reply and `unknown`. Test with a fake Gemini client (no real calls). Verify: `pytest tests/test_llm.py` passes.
-- [ ] **T4 `[CODE]`** `backend/main.py`: `POST /chat` takes `{chat_id, cafe, message}`, saves the user row, calls the LLM, saves the bot row, returns `{reply}`. No IP, header or user-agent is read or stored. Test with the DB and LLM faked. Verify: `pytest` passes in full.
-- [ ] **T5 `[VERIFY]`** Run the server, `curl` one message with `cafe=hashtag`, show the reply, then query Turso and show exactly two rows for that chat_id with the right cafe and role. Confirm the table has no IP, name or email column.
+- [x] **T1 `[CODE]`** `backend/db.py`: `insert_message(chat_id, role, content, cafe)` (fills `created_at` in UTC and `local_hour` in IST) and `get_messages(chat_id)`. Test: `tests/test_db.py` inserts two rows with a random chat_id, reads them back, deletes them. Verify: `pytest tests/test_db.py` passes.
+- [x] **T2 `[CODE]`** `backend/cafes.py`: `load_cafe_context(cafe)` reads `cafes/<cafe>.md`; an unknown cafe raises a clear error. Test: `tests/test_cafes.py`. Verify: `pytest tests/test_cafes.py` passes.
+- [x] **T3 `[CODE]`** `backend/llm.py`: build the system prompt from the "System prompt and safety layer" section of PRODUCT.md, call Gemini, parse the JSON `{reply, cafe}`. If the JSON is malformed, return the raw text as the reply and `unknown`. Test with a fake Gemini client (no real calls). Verify: `pytest tests/test_llm.py` passes.
+- [x] **T4 `[CODE]`** `backend/main.py`: `POST /chat` takes `{chat_id, cafe, message}`, saves the user row, calls the LLM, saves the bot row, returns `{reply}`. No IP, header or user-agent is read or stored. Test with the DB and LLM faked. Verify: `pytest` passes in full.
+- [x] **T5 `[VERIFY]`** Run the server, `curl` one message with `cafe=hashtag`, show the reply, then query Turso and show exactly two rows for that chat_id with the right cafe and role. Confirm the table has no IP, name or email column.
 - [ ] **T6 `[MANUAL]`** I send 5 different messages and read the replies: warm, no advice, one question, at most 3 sentences, no invented cafe details. Not auto-marked done.
 
 **Advisor checkpoint:** consult the stronger model before T1 (schema and privacy) and after T4 (the one place an identifier could sneak in).

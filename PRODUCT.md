@@ -105,6 +105,7 @@ with how a crisis should be handled, so the system prompt alone is not enough.
 
 - [ ] Gemini on the paid tier; its data-use terms checked against the IRB protocol
 - [ ] IRB protocol covers voice-inferred gender and the random `chat_id`
+- [ ] Retention: every row is deleted 60 days after its `created_at` (decided 2026-10-19). Turso backups keep deleted rows for up to the plan's restore window on top of that. Automatic deletion is not built yet; the consent screen must state the 60 days.
 - [ ] Host logging checked: services like Vercel and Cloudflare record IPs by default, which conflicts with "no identifiers stored"
 - [ ] One consent screen, shown once, before the first message: it is an AI, chats are recorded anonymously for research, voice is analysed for gender and the audio is discarded, a chat cannot be deleted later because nothing links it to a person
 - [ ] Audio deleted immediately after transcription and gender estimation; never written to disk or the database
