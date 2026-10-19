@@ -54,3 +54,10 @@ def test_crisis_flag_is_stored_and_defaults_to_zero(chat_id):
     db.insert_message(chat_id, "user", "I don't want to be here", "unknown", crisis=True)
 
     assert [r["crisis"] for r in db.get_messages(chat_id)] == [0, 1]
+
+
+def test_consent_version_is_stored(chat_id):
+    db.insert_message(chat_id, "user", "hi", "hashtag", consent_version="v1-draft")
+
+    [row] = db.get_messages(chat_id)
+    assert row["consent_version"] == "v1-draft"

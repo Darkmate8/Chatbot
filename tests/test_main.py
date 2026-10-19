@@ -37,8 +37,9 @@ def fake(monkeypatch):
 client = TestClient(main.app)
 
 
-def post(chat_id=CHAT_ID, cafe="hashtag", message="but coffee nation was louder", **kwargs):
-    return client.post("/chat", json={"chat_id": chat_id, "cafe": cafe, "message": message}, **kwargs)
+def post(chat_id=CHAT_ID, cafe="hashtag", message="but coffee nation was louder", consent_version="v1-draft", **kwargs):
+    body = {"chat_id": chat_id, "cafe": cafe, "message": message, "consent_version": consent_version}
+    return client.post("/chat", json=body, **kwargs)
 
 
 def test_returns_reply_and_saves_both_rows_with_gemini_tag(fake):
@@ -50,7 +51,8 @@ def test_returns_reply_and_saves_both_rows_with_gemini_tag(fake):
     assert user_args == (CHAT_ID, "user", "but coffee nation was louder", "coffee_nation")
     assert bot_args == (CHAT_ID, "bot", "Coffee Nation sounds different.", "coffee_nation")
     assert user_kwargs["crisis"] is False
-    assert bot_kwargs == {"crisis": False}
+    assert user_kwargs["consent_version"] == "v1-draft"
+    assert bot_kwargs == {"crisis": False, "consent_version": "v1-draft"}
 
 
 def test_crisis_turn_is_flagged_on_both_rows(fake):
@@ -96,9 +98,25 @@ def test_does_not_store_ip_or_headers(fake):
     assert "testclient" not in stored  # TestClient's fake client host
 
 
-@pytest.mark.parametrize("cafe", ["starbucks", "unknown"])
-def test_unknown_cafe_is_rejected_and_nothing_saved(fake, cafe):
-    assert post(cafe=cafe).status_code == 400
+def test_unrecognised_cafe_is_rejected_and_nothing_saved(fake):
+    assert post(cafe="starbucks").status_code == 400
+    assert fake["saved"] == []
+
+
+def test_unknown_entry_cafe_is_accepted_for_links_without_cafe(fake):
+    assert post(cafe="unknown").status_code == 200
+    assert fake["llm"][0]["entry_cafe"] == "unknown"
+
+
+@pytest.mark.parametrize("version", ["v0-old", ""])
+def test_wrong_consent_version_is_rejected_and_nothing_saved(fake, version):
+    assert post(consent_version=version).status_code == 400
+    assert fake["saved"] == []
+
+
+def test_missing_consent_version_is_rejected(fake):
+    res = client.post("/chat", json={"chat_id": CHAT_ID, "cafe": "hashtag", "message": "hi"})
+    assert res.status_code == 422
     assert fake["saved"] == []
 
 

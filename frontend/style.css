@@ -1,0 +1,377 @@
+/* Cafe Chat: a menu card on cream paper. Fonts are ones already on the
+   phone; a web font would send every student's IP to the font host. */
+
+:root {
+  --paper: #f4ecdf;
+  --paper-deep: #eadfcc;
+  --card: #fbf6ee;
+  --ink: #2b1d14;
+  --ink-soft: #6b5546;
+  --rule: #d6c6b0;
+  --accent: #b5532f;
+  --accent-ink: #fff8f0;
+  --bot: #efe4d3;
+  --user: #2b1d14;
+  --user-ink: #fbf6ee;
+  --error: #8f2d1f;
+  --focus: #b5532f;
+
+  --display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --body: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --radius: 18px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #17110d;
+    --paper-deep: #120d0a;
+    --card: #211915;
+    --ink: #f1e6d6;
+    --ink-soft: #b9a591;
+    --rule: #3d2f26;
+    --accent: #e0835c;
+    --accent-ink: #1b120d;
+    --bot: #2d231d;
+    --user: #f1e6d6;
+    --user-ink: #1b120d;
+    --error: #ef8a76;
+    --focus: #e0835c;
+  }
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { height: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink);
+  background-color: var(--paper);
+  /* Faint coffee-ring and paper fibre, drawn with gradients (no image files). */
+  background-image:
+    radial-gradient(circle at 88% 6%, transparent 52px, color-mix(in srgb, var(--accent) 9%, transparent) 53px, transparent 58px),
+    radial-gradient(circle at 12% 94%, transparent 70px, color-mix(in srgb, var(--accent) 6%, transparent) 71px, transparent 77px),
+    repeating-linear-gradient(115deg, transparent 0 3px, color-mix(in srgb, var(--paper-deep) 55%, transparent) 3px 4px);
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  box-shadow: 0 1px 0 var(--rule), 0 24px 48px -28px color-mix(in srgb, var(--ink) 45%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Perforated top edge, like a tear-off order slip. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 8px;
+  background: radial-gradient(circle at 6px -2px, var(--paper) 5px, transparent 5.5px) 0 0 / 12px 8px repeat-x;
+}
+
+.masthead {
+  padding: 36px 28px 20px;
+  text-align: center;
+  border-bottom: 1px dashed var(--rule);
+}
+
+.kicker {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(40px, 11vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+.cafe-line {
+  margin: 12px 0 0;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink-soft);
+}
+
+.cafe-line::before,
+.cafe-line::after {
+  content: "—";
+  margin: 0 0.6em;
+  color: var(--rule);
+}
+
+/* Consent */
+
+.panel { padding: 24px 28px 28px; }
+
+.section-title {
+  margin: 0 0 14px;
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.consent-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: item;
+}
+
+.consent-list li {
+  counter-increment: item;
+  position: relative;
+  padding: 10px 0 10px 40px;
+  border-bottom: 1px dotted var(--rule);
+  font-size: 15px;
+}
+
+.consent-list li:last-child { border-bottom: 0; }
+
+.consent-list li::before {
+  content: counter(item, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 9px;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.btn {
+  font: inherit;
+  cursor: pointer;
+  border: 0;
+  border-radius: 999px;
+  min-height: 48px;
+  padding: 12px 22px;
+  transition: transform 120ms ease, background-color 160ms ease, opacity 160ms ease;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.btn-quiet {
+  background: transparent;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.declined-text {
+  margin: 12px 0;
+  text-align: center;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 20px;
+}
+
+/* Chat */
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.chat[hidden] { display: none; }
+
+.log {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px 18px;
+  min-height: 52vh;
+  max-height: calc(100dvh - 260px);
+  overflow-y: auto;
+}
+
+.bubble {
+  max-width: 82%;
+  padding: 11px 15px;
+  border-radius: var(--radius);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  animation: rise 260ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+.bubble-bot {
+  align-self: flex-start;
+  background: var(--bot);
+  border-bottom-left-radius: 5px;
+}
+
+.bubble-user {
+  align-self: flex-end;
+  background: var(--user);
+  color: var(--user-ink);
+  border-bottom-right-radius: 5px;
+}
+
+.bubble-error {
+  align-self: center;
+  max-width: 100%;
+  background: transparent;
+  color: var(--error);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Three steaming dots while the bot replies. */
+.typing {
+  display: inline-flex;
+  gap: 5px;
+  padding: 16px;
+}
+
+.typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-soft);
+  animation: steam 1.1s ease-in-out infinite;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.15s; }
+.typing span:nth-child(3) { animation-delay: 0.3s; }
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  border-top: 1px dashed var(--rule);
+  background: var(--card);
+}
+
+textarea {
+  flex: 1;
+  resize: none;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 22px;
+  padding: 11px 16px;
+  min-height: 46px;
+  max-height: 140px;
+}
+
+textarea::placeholder { color: var(--ink-soft); }
+
+.btn-send {
+  flex: none;
+  width: 46px;
+  min-height: 46px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn:disabled,
+textarea:disabled { opacity: 0.55; cursor: default; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Page-load: masthead, then the consent items one after another. */
+.masthead,
+.section-title,
+.consent-list li,
+.actions {
+  animation: rise 520ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+.section-title { animation-delay: 120ms; }
+.consent-list li:nth-child(1) { animation-delay: 180ms; }
+.consent-list li:nth-child(2) { animation-delay: 230ms; }
+.consent-list li:nth-child(3) { animation-delay: 280ms; }
+.consent-list li:nth-child(4) { animation-delay: 330ms; }
+.consent-list li:nth-child(5) { animation-delay: 380ms; }
+.consent-list li:nth-child(6) { animation-delay: 430ms; }
+.consent-list li:nth-child(7) { animation-delay: 480ms; }
+.consent-list li:nth-child(8) { animation-delay: 530ms; }
+.actions { animation-delay: 600ms; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes steam {
+  0%, 100% { transform: translateY(0); opacity: 0.45; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 420px) {
+  body { padding: 0; }
+  .card { border-radius: 0; border: 0; min-height: 100dvh; }
+  .masthead { padding: 30px 20px 16px; }
+  .panel { padding: 20px 20px 24px; }
+  .log { max-height: none; }
+}

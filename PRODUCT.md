@@ -131,6 +131,36 @@ and sign off the wording before launch.
 Thank you for telling me. It sounds like you are going through something really hard, and you deserve support from a real person. You can call Tele-MANAS for free, any time, at 14416. On campus, you can reach [CAMPUS COUNSELING TBD]. If you are in immediate danger, please call 112.
 ```
 
+## Consent screen and greetings
+
+Shown once per visit, before the first message. Current version: `v1-draft`
+(drafted by Claude on 2026-10-19 from the checklist below). The team must
+fill the placeholder and sign off the wording before launch; any wording
+change needs a new version. Voice wording is added in Slice 6.
+
+Consent text, one paragraph per line:
+
+```
+This is an AI chatbot, not a person. It is part of a FLAME University research project about how students feel about campus cafes.
+Your messages are saved anonymously for research. We do not collect your name, email, phone number, IP address or device details.
+Please do not type your name or anything else that could identify you or someone else.
+Your messages are sent to Google's Gemini AI to write the replies. Google does not use them to improve its products.
+Because nothing links a chat to you, we cannot find or delete your chat later. All chats are deleted 60 days after they are written.
+If a message suggests you might be in crisis, the bot will share helpline numbers, and the research team will see that this happened.
+Taking part is voluntary. You can stop at any time by closing this page.
+Questions about the study: [RESEARCH TEAM CONTACT TBD].
+```
+
+Buttons: "I agree, start chatting" and "No thanks". "No thanks" shows: "No
+problem. You can close this page." Nothing is sent or stored.
+
+Greeting (fixed, shown by the page, not stored), with and without `?cafe=`:
+
+```
+Hi! I'm an AI, here to hear about your time at {cafe_name}. How has it been?
+Hi! I'm an AI, here to hear about the cafes at FLAME. Which cafe are you at, or thinking about?
+```
+
 ## Privacy, consent and IRB checklist
 
 - [ ] Gemini on the paid tier; its data-use terms checked against the IRB protocol
@@ -140,7 +170,7 @@ Thank you for telling me. It sounds like you are going through something really 
 - [ ] One consent screen, shown once, before the first message: it is an AI, chats are recorded anonymously for research, voice is analysed for gender and the audio is discarded, a chat cannot be deleted later because nothing links it to a person
 - [ ] Audio deleted immediately after transcription and gender estimation; never written to disk or the database
 - [ ] DPDP Act 2023 considered; confirm with the professor whether the university's data officer must sign off
-- [ ] `consent_version` stored on every row
+- [x] `consent_version` stored on every row (from Slice 4)
 
 ## Roadmap (vertical slices)
 
