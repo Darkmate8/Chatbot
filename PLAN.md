@@ -12,11 +12,11 @@ never auto-marked done.
 
 ## Before starting the goal (do these yourself)
 
-- [ ] Create a Turso database; put `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in `.env`
+- [x] Create a Turso database; put `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in `.env`
 - [ ] Create a paid-tier Gemini key; put `GEMINI_API_KEY` and `GEMINI_MODEL` in `.env`
-- [ ] Create `.gitignore` containing `.env`, then `git init` and make a first commit
-- [ ] Write `cafes/hashtag.md` yourself (10 to 15 lines: menu, books, seating, vibe; no invented details)
-- [ ] Run this once in the Turso shell:
+- [x] Create `.gitignore` containing `.env`, then `git init` and make a first commit
+- [x] Write `cafes/hashtag.md` yourself (10 to 15 lines: menu, books, seating, vibe; no invented details)
+- [x] Run this once in the Turso shell:
 
 ```sql
 CREATE TABLE IF NOT EXISTS messages (
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 ```
 
-- [ ] Commit again (this is your rollback point)
+- [x] Commit again (this is your rollback point)
 
 ## Tasks (each 2 to 5 minutes)
 
