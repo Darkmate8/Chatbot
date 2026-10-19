@@ -44,6 +44,9 @@ RESPONSE_SCHEMA = {
 }
 
 
+# Gemini only sees this many earlier messages, to keep replies fast and cheap.
+HISTORY_LIMIT = 5
+
 # Our DB says "bot"; Gemini calls its own turns "model".
 GEMINI_ROLES = {"user": "user", "bot": "model"}
 
@@ -54,7 +57,7 @@ def build_system_prompt(cafe_context, entry_cafe):
 
 
 def build_contents(history, message):
-    turns = [(GEMINI_ROLES[m["role"]], m["content"]) for m in history] + [("user", message)]
+    turns = [(GEMINI_ROLES[m["role"]], m["content"]) for m in history[-HISTORY_LIMIT:]] + [("user", message)]
     return [types.Content(role=role, parts=[types.Part.from_text(text=text)]) for role, text in turns]
 
 

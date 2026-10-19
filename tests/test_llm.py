@@ -76,3 +76,13 @@ def test_cafe_outside_allowed_list_becomes_unknown():
     fake = FakeGemini(json.dumps({"reply": "Nice!", "cafe": "starbucks"}))
 
     assert llm.get_reply([], "hi", "ctx", "hashtag", client=fake) == ("Nice!", "unknown")
+
+
+def test_only_the_last_five_earlier_messages_are_sent():
+    fake = FakeGemini(json.dumps({"reply": "Nice.", "cafe": "hashtag"}))
+    history = [{"role": "user" if i % 2 == 0 else "bot", "content": f"msg {i}"} for i in range(8)]
+
+    llm.get_reply(history, "new message", "ctx", "hashtag", client=fake)
+
+    sent = [c.parts[0].text for c in fake.calls[0]["contents"]]
+    assert sent == ["msg 3", "msg 4", "msg 5", "msg 6", "msg 7", "new message"]

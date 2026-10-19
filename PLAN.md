@@ -11,7 +11,10 @@ stores the cafe that message is about, as tagged by Gemini.
 - All four cafe files go into the system prompt every turn. A missing file is
   shown to Gemini as "no info yet" so it never invents details.
 - Gemini's `cafe` tag is stored on both rows of a turn. `unknown` stays `unknown`.
-- The chat's earlier messages (from Turso) are sent with each new message.
+- The chat's last 5 earlier messages (from Turso) are sent with each new message
+  (`HISTORY_LIMIT` in `backend/llm.py`).
+- Model: `gemini-3.5-flash-lite` (set in `.env`). Measured ~1-2 s per reply vs
+  9-18 s and 503 "high demand" errors on `gemini-3.8-flash`.
 - The user row keeps the time the message arrived, even though it is saved
   after the Gemini call (it needs Gemini's tag).
 
