@@ -60,6 +60,7 @@ rows into conversations; it is not linked to a name, email, device or IP.
 | gender | text | Estimated from voice; null for text users |
 | gender_source | text | `inferred_voice` or null, so noisy labels can be filtered later |
 | consent_version | text | Which consent wording the student saw |
+| crisis | integer | 1 if the crisis check fired for this turn (set on both rows), else 0 |
 
 Because nothing links a chat to a person, individual chats cannot be deleted
 on request. The consent screen must say so.
@@ -102,8 +103,33 @@ with how a crisis should be handled, so the system prompt alone is not enough.
 
 - If the message mentions self-harm, suicide, abuse or acute crisis, skip the cafe persona and reply with care.
 - Share Tele-MANAS (14416) and the campus counseling contact (to be filled in by the team).
-- Flag the message in the logs so the research team knows a crisis response was triggered. Do not continue the cafe conversation in the same turn.
+- Flag the turn with `crisis = 1` on both rows so the research team knows a crisis response was triggered. Never put message text in logs. Do not continue the cafe conversation in the same turn.
+- Crisis turns are stored like other turns, with cafe `unknown`.
+- Fail safe: if the classifier call errors or returns bad output, or the persona call returns no text, send the care reply and flag the turn.
 - Test with made-up messages before launch, including indirect phrasings.
+
+### Crisis classifier prompt
+
+```
+You check one message from a university student who is chatting with
+a cafe chatbot. Decide whether it mentions or hints at self-harm,
+suicide, abuse, or an acute crisis. Count indirect phrasings, such as
+"I don't want to be here anymore" or "nobody would notice if I
+disappeared". Everyday stress, tiredness, figures of speech ("this
+exam is killing me"), and complaints about food or noise are not a
+crisis.
+
+Output format (JSON): {"crisis": true or false}
+```
+
+### Care reply
+
+Fixed text, never written by Gemini. The team must replace the placeholder
+and sign off the wording before launch.
+
+```
+Thank you for telling me. It sounds like you are going through something really hard, and you deserve support from a real person. You can call Tele-MANAS for free, any time, at 14416. On campus, you can reach [CAMPUS COUNSELING TBD]. If you are in immediate danger, please call 112.
+```
 
 ## Privacy, consent and IRB checklist
 

@@ -15,14 +15,14 @@ HISTORY = [
 @pytest.fixture
 def fake(monkeypatch):
     """Fake DB and LLM: records every call, never touches Turso or Gemini."""
-    calls = {"saved": [], "history_for": [], "llm": []}
+    calls = {"saved": [], "history_for": [], "llm": [], "result": ("Coffee Nation sounds different.", "coffee_nation", False)}
 
-    def get_reply(history, message, cafe_context, entry_cafe):
+    def respond(history, message, cafe_context, entry_cafe):
         calls["llm"].append(
             {"history": history, "message": message, "cafe_context": cafe_context,
              "entry_cafe": entry_cafe, "at": datetime.now(timezone.utc)}
         )
-        return "Coffee Nation sounds different.", "coffee_nation"
+        return calls["result"]
 
     def get_messages(chat_id):
         calls["history_for"].append(chat_id)
@@ -30,7 +30,7 @@ def fake(monkeypatch):
 
     monkeypatch.setattr(main.db, "insert_message", lambda *args, **kwargs: calls["saved"].append((args, kwargs)))
     monkeypatch.setattr(main.db, "get_messages", get_messages)
-    monkeypatch.setattr(main.llm, "get_reply", get_reply)
+    monkeypatch.setattr(main.safety, "respond", respond)
     return calls
 
 
@@ -49,7 +49,19 @@ def test_returns_reply_and_saves_both_rows_with_gemini_tag(fake):
     [(user_args, user_kwargs), (bot_args, bot_kwargs)] = fake["saved"]
     assert user_args == (CHAT_ID, "user", "but coffee nation was louder", "coffee_nation")
     assert bot_args == (CHAT_ID, "bot", "Coffee Nation sounds different.", "coffee_nation")
-    assert bot_kwargs == {}
+    assert user_kwargs["crisis"] is False
+    assert bot_kwargs == {"crisis": False}
+
+
+def test_crisis_turn_is_flagged_on_both_rows(fake):
+    fake["result"] = ("CARE", "unknown", True)
+
+    res = post(message="I don't want to be here anymore")
+
+    assert res.json() == {"reply": "CARE"}
+    [(user_args, user_kwargs), (bot_args, bot_kwargs)] = fake["saved"]
+    assert user_args[3] == bot_args[3] == "unknown"
+    assert user_kwargs["crisis"] is True and bot_kwargs["crisis"] is True
 
 
 def test_user_row_keeps_arrival_time_not_save_time(fake):

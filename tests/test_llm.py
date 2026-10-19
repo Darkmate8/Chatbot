@@ -1,23 +1,9 @@
 import json
 import re
-from types import SimpleNamespace
-
 import pytest
 
 from backend import llm
-
-
-class FakeGemini:
-    """Stands in for genai.Client: records the call, returns canned text."""
-
-    def __init__(self, text):
-        self.text = text
-        self.calls = []
-        self.models = self
-
-    def generate_content(self, *, model, contents, config):
-        self.calls.append({"model": model, "contents": contents, "config": config})
-        return SimpleNamespace(text=self.text)
+from tests.fakes import FakeGemini
 
 
 @pytest.fixture(autouse=True)

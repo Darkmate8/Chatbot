@@ -47,3 +47,10 @@ def test_rejects_unknown_cafe(chat_id):
     with pytest.raises(ValueError):
         db.insert_message(chat_id, "user", "hi", "starbucks")
     assert db.get_messages(chat_id) == []
+
+
+def test_crisis_flag_is_stored_and_defaults_to_zero(chat_id):
+    db.insert_message(chat_id, "user", "hi", "hashtag")
+    db.insert_message(chat_id, "user", "I don't want to be here", "unknown", crisis=True)
+
+    assert [r["crisis"] for r in db.get_messages(chat_id)] == [0, 1]
