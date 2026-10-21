@@ -40,7 +40,7 @@ live site with the cafe already set, agree to the consent screen and chat.
 - [x] **T2 `[CODE]`** `/chat` rejects messages over 2000 characters; the text box has `maxlength`. Verify: `pytest tests/test_main.py tests/test_frontend.py`.
 - [x] **T3 `[CODE]`** `render.yaml` + `.python-version`. Test: the start command binds `0.0.0.0:$PORT` and keeps `--no-access-log`; plan is `free`; secrets are `sync: false`. Verify: `pytest`.
 - [x] **T4 `[CODE]`** `scripts/make_qr.py <site-url>` writes `qr/<cafe>.svg` for each cafe (needs `pip install -r requirements-dev.txt`). Test: the encoded links are `<site-url>/?cafe=<slug>`.
-- [ ] **T5 `[CODE]`** Push to GitHub (the repo is public; history checked for secrets on 2026-10-21, none found).
+- [x] **T5 `[CODE]`** Push to GitHub (the repo is public; history checked for secrets on 2026-10-21, none found).
 - [ ] **T6 `[MANUAL]`** You, about 5 minutes: sign up at render.com with GitHub (Hobby workspace), New > Blueprint > pick this repo, paste the four values from your `.env` when asked, Apply. Send me the `https://....onrender.com` link.
 - [ ] **T7 `[VERIFY]`** Live site: page loads, a test chat is saved with `consent_version = v1-draft`, test rows deleted. You check Render's Logs tab shows no IP addresses.
 - [ ] **T8 `[CODE]`** Make the QR codes with the live link and commit them.
