@@ -42,6 +42,6 @@ live site with the cafe already set, agree to the consent screen and chat.
 - [x] **T4 `[CODE]`** `scripts/make_qr.py <site-url>` writes `qr/<cafe>.svg` for each cafe (needs `pip install -r requirements-dev.txt`). Test: the encoded links are `<site-url>/?cafe=<slug>`.
 - [x] **T5 `[CODE]`** Push to GitHub (the repo is public; history checked for secrets on 2026-10-21, none found).
 - [ ] **T6 `[MANUAL]`** You, about 5 minutes: sign up at render.com with GitHub (Hobby workspace), New > Blueprint > pick this repo, paste the four values from your `.env` when asked, Apply. Send me the `https://....onrender.com` link.
-- [ ] **T7 `[VERIFY]`** Live site: page loads, a test chat is saved with `consent_version = v1-draft`, test rows deleted. You check Render's Logs tab shows no IP addresses.
-- [ ] **T8 `[CODE]`** Make the QR codes with the live link and commit them.
+- [x] **T7 `[VERIFY]`** Live site: page loads, a test chat is saved with `consent_version = v1-draft`, test rows deleted. You check Render's Logs tab shows no IP addresses.
+- [x] **T8 `[CODE]`** Make the QR codes with the live link and commit them.
 - [ ] **T9 `[MANUAL]`** Before any real student: fill the three placeholders and get team sign-off (Slice 3 T8, Slice 4 T6), set a Gemini budget alert in Google Cloud, decide free vs paid instance. Then the pilot: 5 to 10 students at Hashtag.
