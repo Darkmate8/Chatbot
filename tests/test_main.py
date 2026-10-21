@@ -124,3 +124,9 @@ def test_missing_consent_version_is_rejected(fake):
 def test_chat_id_must_be_a_random_uuid(fake, chat_id):
     assert post(chat_id=chat_id).status_code == 422
     assert fake["saved"] == []
+
+
+def test_rejects_messages_over_2000_characters(fake):
+    assert post(message="a" * 2000).status_code == 200
+    assert post(message="a" * 2001).status_code == 422
+    assert len(fake["llm"]) == 1  # the long one never reached Gemini

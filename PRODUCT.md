@@ -18,6 +18,7 @@ The four cafes: Hashtag, Coffee Nation (CN), Juice Press (JP), Barsha.
 | LLM | Gemini API, paid tier only (free tier can use content to improve Google products) |
 | Speech-to-text | Not Parakeet by default (needs a GPU). Preferred: faster-whisper (small model) inside the Python backend. Voice comes after text, in a later slice |
 | Database | Turso |
+| Hosting | Render, Hobby workspace (no per-request HTTP logs on that plan), region Singapore, config in `render.yaml`. Railway ruled out: it logs visitor IPs for 90 days with no opt-out |
 | Gender | Inferred from voice with a Python library; noisy and accepted. Null for text users |
 | Identifiers | No names, emails, accounts, IPs, or audio stored |
 | Cafe detection | `?cafe=` URL/QR parameter first; bot asks in chat if missing; Gemini tags the cafe on every reply |
@@ -166,7 +167,7 @@ Hi! I'm an AI, here to hear about the cafes at FLAME. Which cafe are you at, or 
 - [ ] Gemini on the paid tier; its data-use terms checked against the IRB protocol
 - [ ] IRB protocol covers voice-inferred gender and the random `chat_id`
 - [ ] Retention: every row is deleted 60 days after its `created_at` (decided 2026-10-19). Turso backups keep deleted rows for up to the plan's restore window on top of that. Automatic deletion is not built yet; the consent screen must state the 60 days.
-- [ ] Host logging checked: services like Vercel and Cloudflare record IPs by default, which conflicts with "no identifiers stored"
+- [ ] Host logging checked: services like Vercel and Cloudflare record IPs by default, which conflicts with "no identifiers stored". Render chosen (2026-10-21): Hobby workspaces get no HTTP request logs; confirm on the live site that the Logs tab shows no IPs
 - [ ] One consent screen, shown once, before the first message: it is an AI, chats are recorded anonymously for research, voice is analysed for gender and the audio is discarded, a chat cannot be deleted later because nothing links it to a person
 - [ ] Audio deleted immediately after transcription and gender estimation; never written to disk or the database
 - [ ] DPDP Act 2023 considered; confirm with the professor whether the university's data officer must sign off
@@ -189,6 +190,5 @@ slice live in PLAN.md.
 ## Open questions
 
 - Who writes the four cafe context files (Hashtag, Coffee Nation, Juice Press, Barsha), and by when?
-- Where will the site and backend be hosted, given free-tier limits and default IP logging?
 - Where will speech-to-text run when voice is added?
 - Will the site be reachable only through cafe QR codes, or also as an open URL? If open, the bot asks which cafe in its first message.

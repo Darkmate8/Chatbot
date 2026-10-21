@@ -4,7 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from pydantic import UUID4, BaseModel
+from pydantic import UUID4, BaseModel, Field
 
 from backend import cafes, db, safety
 
@@ -13,13 +13,17 @@ load_dotenv()
 # Must match the consent text the page shows (see PRODUCT.md). Bump on any wording change.
 CONSENT_VERSION = "v1-draft"
 
+# The site is public, so cap message size to stop anyone running up the Gemini bill.
+# frontend/index.html has the same maxlength (a test keeps them equal).
+MAX_MESSAGE_LENGTH = 2000
+
 app = FastAPI()
 
 
 class ChatRequest(BaseModel):
     chat_id: UUID4  # random, from crypto.randomUUID() in the browser; anything else is rejected
     cafe: str
-    message: str
+    message: str = Field(max_length=MAX_MESSAGE_LENGTH)
     consent_version: str
 
 

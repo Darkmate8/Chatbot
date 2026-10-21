@@ -6,7 +6,7 @@ chats are stored to train an emotion-detection model later. Full context
 in PLAN.md. Do not duplicate either file here.
 
 ## Commands (update when they change)
-- Setup: `python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`
+- Setup: `python -m venv .venv && source .venv/bin/activate && pip install -r requirements-dev.txt` (the server itself only installs requirements.txt)
 - Run: `uvicorn backend.main:app --reload --no-access-log` (the access log prints client IPs; never drop this flag)
 - Test: `pytest`
 

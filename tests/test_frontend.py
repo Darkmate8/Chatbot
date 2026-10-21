@@ -50,3 +50,9 @@ def test_no_third_party_requests(path):
 
     assert res.status_code == 200
     assert not re.search(r"https?://", res.text)
+
+
+def test_text_box_stops_at_the_backend_limit():
+    html = client.get("/").text
+
+    assert f'maxlength="{main.MAX_MESSAGE_LENGTH}"' in html
