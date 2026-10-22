@@ -56,3 +56,48 @@ def test_text_box_stops_at_the_backend_limit():
     html = client.get("/").text
 
     assert f'maxlength="{main.MAX_MESSAGE_LENGTH}"' in html
+
+
+def test_backend_consent_version_is_the_one_product_md_names():
+    with open("PRODUCT.md") as f:
+        assert f"Current version: `{main.CONSENT_VERSION}`" in f.read()
+
+
+def test_page_has_a_mic_button():
+    html = client.get("/").text
+
+    assert re.search(r'<button type="button"[^>]*id="mic"', html)
+
+
+def test_script_sends_recordings_to_transcribe_and_marks_voice_messages():
+    js = client.get("/app.js").text
+
+    assert 'fetch("/transcribe"' in js
+    assert "input_mode: mode" in js
+
+
+def test_recording_stops_at_60_seconds():
+    js = client.get("/app.js").text
+
+    assert "const MAX_RECORD_SECONDS = 60;" in js
+
+
+def test_script_only_records_types_the_backend_accepts():
+    js = client.get("/app.js").text
+    recording_types = re.search(r"const RECORDING_TYPES = \[(.*?)\];", js).group(1)
+
+    assert set(re.findall(r'"([^"]+)"', recording_types)) == main.ALLOWED_AUDIO_TYPES
+
+
+def test_page_has_a_live_wave_and_a_progress_bar_for_voice():
+    html = client.get("/").text
+
+    assert re.search(r'<canvas[^>]*id="wave"', html)
+    assert re.search(r'role="progressbar"', html)
+
+
+def test_hidden_attribute_always_hides():
+    # Classes like .btn-mic set display, which would otherwise override [hidden].
+    css = client.get("/style.css").text
+
+    assert "[hidden] { display: none !important; }" in css

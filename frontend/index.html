@@ -8,7 +8,7 @@
   <title>Cafe Chat · FLAME</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-consent-version="v1-draft">
+<body data-consent-version="v2-draft">
   <main class="card">
     <header class="masthead">
       <p class="kicker">FLAME University · Research</p>
@@ -23,6 +23,7 @@
         <li>Your messages are saved anonymously for research. We do not collect your name, email, phone number, IP address or device details.</li>
         <li>Please do not type your name or anything else that could identify you or someone else.</li>
         <li>Your messages are sent to Google's Gemini AI to write the replies. Google does not use them to improve its products.</li>
+        <li>If you use the microphone, your recording is sent to Google's Gemini AI to turn it into text and is then thrown away. We never save recordings.</li>
         <li>Because nothing links a chat to you, we cannot find or delete your chat later. All chats are deleted 60 days after they are written.</li>
         <li>If a message suggests you might be in crisis, the bot will share helpline numbers, and the research team will see that this happened.</li>
         <li>Taking part is voluntary. You can stop at any time by closing this page.</li>
@@ -42,7 +43,18 @@
       <div id="log" class="log" role="log" aria-live="polite"></div>
       <form id="composer" class="composer">
         <label for="message" class="visually-hidden">Your message</label>
+        <div id="voice" class="voice" hidden>
+          <canvas id="wave" class="wave" aria-hidden="true"></canvas>
+          <span id="voice-time" class="voice-time" aria-live="off">0:00</span>
+          <div class="voice-working">
+            <span class="voice-label">Turning your voice into text…</span>
+            <div class="progress" role="progressbar" aria-label="Turning your voice into text"><span></span></div>
+          </div>
+        </div>
         <textarea id="message" rows="1" placeholder="Type a message…" autocomplete="off" maxlength="2000" required></textarea>
+        <button type="button" class="btn btn-mic" id="mic" aria-label="Record a voice message" aria-pressed="false" hidden>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
         <button type="submit" class="btn btn-send" id="send" aria-label="Send">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 12h13M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>

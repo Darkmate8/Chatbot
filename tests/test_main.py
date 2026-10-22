@@ -37,8 +37,10 @@ def fake(monkeypatch):
 client = TestClient(main.app)
 
 
-def post(chat_id=CHAT_ID, cafe="hashtag", message="but coffee nation was louder", consent_version="v1-draft", **kwargs):
+def post(chat_id=CHAT_ID, cafe="hashtag", message="but coffee nation was louder", consent_version=main.CONSENT_VERSION, input_mode=None, **kwargs):
     body = {"chat_id": chat_id, "cafe": cafe, "message": message, "consent_version": consent_version}
+    if input_mode is not None:
+        body["input_mode"] = input_mode
     return client.post("/chat", json=body, **kwargs)
 
 
@@ -51,8 +53,8 @@ def test_returns_reply_and_saves_both_rows_with_gemini_tag(fake):
     assert user_args == (CHAT_ID, "user", "but coffee nation was louder", "coffee_nation")
     assert bot_args == (CHAT_ID, "bot", "Coffee Nation sounds different.", "coffee_nation")
     assert user_kwargs["crisis"] is False
-    assert user_kwargs["consent_version"] == "v1-draft"
-    assert bot_kwargs == {"crisis": False, "consent_version": "v1-draft"}
+    assert user_kwargs["consent_version"] == "v2-draft"
+    assert bot_kwargs == {"crisis": False, "consent_version": "v2-draft"}
 
 
 def test_crisis_turn_is_flagged_on_both_rows(fake):
@@ -130,3 +132,94 @@ def test_rejects_messages_over_2000_characters(fake):
     assert post(message="a" * 2000).status_code == 200
     assert post(message="a" * 2001).status_code == 422
     assert len(fake["llm"]) == 1  # the long one never reached Gemini
+
+
+def test_input_mode_defaults_to_text_on_both_rows(fake):
+    post()
+
+    [(_, user_kwargs), (_, bot_kwargs)] = fake["saved"]
+    assert user_kwargs["input_mode"] == "text"
+    assert bot_kwargs.get("input_mode", "text") == "text"
+
+
+def test_voice_input_mode_is_saved_on_user_row_only(fake):
+    post(input_mode="voice")
+
+    [(_, user_kwargs), (_, bot_kwargs)] = fake["saved"]
+    assert user_kwargs["input_mode"] == "voice"
+    assert bot_kwargs.get("input_mode", "text") == "text"
+
+
+def test_unknown_input_mode_is_rejected(fake):
+    assert post(input_mode="video").status_code == 422
+    assert fake["saved"] == []
+
+
+@pytest.fixture
+def fake_transcribe(monkeypatch):
+    calls = {"audio": [], "result": "the chai was nice"}
+
+    def transcribe(audio, mime_type):
+        calls["audio"].append((audio, mime_type))
+        if isinstance(calls["result"], Exception):
+            raise calls["result"]
+        return calls["result"]
+
+    monkeypatch.setattr(main.llm, "transcribe", transcribe)
+    return calls
+
+
+def post_audio(audio=b"fake-audio", content_type="audio/webm;codecs=opus", **kwargs):
+    return client.post("/transcribe", content=audio, headers={"Content-Type": content_type, **kwargs.pop("headers", {})}, **kwargs)
+
+
+def test_transcribe_returns_text_and_sends_raw_audio(fake_transcribe):
+    res = post_audio()
+
+    assert res.status_code == 200
+    assert res.json() == {"text": "the chai was nice"}
+    assert fake_transcribe["audio"] == [(b"fake-audio", "audio/webm")]  # codecs part dropped
+
+
+@pytest.mark.parametrize("content_type", ["audio/webm", "audio/ogg", "audio/mp4", "AUDIO/MP4"])
+def test_transcribe_accepts_browser_recording_types(fake_transcribe, content_type):
+    assert post_audio(content_type=content_type).status_code == 200
+
+
+@pytest.mark.parametrize("content_type", ["video/mp4", "application/json", "text/plain"])
+def test_transcribe_rejects_other_types_before_gemini(fake_transcribe, content_type):
+    assert post_audio(content_type=content_type).status_code == 415
+    assert fake_transcribe["audio"] == []
+
+
+def test_transcribe_rejects_audio_over_2_mb_before_gemini(fake_transcribe):
+    assert post_audio(audio=b"a" * main.MAX_AUDIO_BYTES).status_code == 200
+    assert post_audio(audio=b"a" * (main.MAX_AUDIO_BYTES + 1)).status_code == 413
+    assert len(fake_transcribe["audio"]) == 1
+
+
+def test_transcribe_rejects_empty_body(fake_transcribe):
+    assert post_audio(audio=b"").status_code == 400
+    assert fake_transcribe["audio"] == []
+
+
+def test_transcribe_cuts_text_to_message_limit(fake_transcribe):
+    fake_transcribe["result"] = "a" * (main.MAX_MESSAGE_LENGTH + 50)
+
+    assert len(post_audio().json()["text"]) == main.MAX_MESSAGE_LENGTH
+
+
+@pytest.mark.parametrize("error", [main.llm.TranscriptionError("bad"), RuntimeError("503 UNAVAILABLE")])
+def test_transcribe_gemini_failure_is_a_friendly_502(fake_transcribe, error):
+    fake_transcribe["result"] = error
+
+    res = post_audio()
+
+    assert res.status_code == 502
+    assert "try again" in res.json()["detail"]
+
+
+def test_transcribe_stores_nothing(fake, fake_transcribe):
+    post_audio()
+
+    assert fake["saved"] == []

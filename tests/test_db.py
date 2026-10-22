@@ -61,3 +61,16 @@ def test_consent_version_is_stored(chat_id):
 
     [row] = db.get_messages(chat_id)
     assert row["consent_version"] == "v1-draft"
+
+
+def test_input_mode_is_stored_and_defaults_to_text(chat_id):
+    db.insert_message(chat_id, "user", "typed", "hashtag")
+    db.insert_message(chat_id, "user", "spoken", "hashtag", input_mode="voice")
+
+    assert [r["input_mode"] for r in db.get_messages(chat_id)] == ["text", "voice"]
+
+
+def test_rejects_unknown_input_mode(chat_id):
+    with pytest.raises(ValueError):
+        db.insert_message(chat_id, "user", "hi", "hashtag", input_mode="video")
+    assert db.get_messages(chat_id) == []

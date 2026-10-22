@@ -72,3 +72,34 @@ def test_only_the_last_five_earlier_messages_are_sent():
 
     sent = [c.parts[0].text for c in fake.calls[0]["contents"]]
     assert sent == ["msg 3", "msg 4", "msg 5", "msg 6", "msg 7", "new message"]
+
+
+def test_transcription_prompt_matches_product_md():
+    with open("PRODUCT.md") as f:
+        section = f.read().split("### Transcription prompt")[1]
+    documented = re.search(r"```\n(.*?)```", section, re.S).group(1)
+
+    assert llm.TRANSCRIBE_PROMPT == documented
+
+
+def test_transcribe_sends_audio_bytes_and_returns_text():
+    fake = FakeGemini(json.dumps({"text": "the chai was nice"}))
+
+    assert llm.transcribe(b"fake-audio", "audio/webm", client=fake) == "the chai was nice"
+    [call] = fake.calls
+    assert call["model"] == "fake-model"
+    assert call["config"].system_instruction == llm.TRANSCRIBE_PROMPT
+    [part] = call["contents"]
+    assert part.inline_data.data == b"fake-audio"
+    assert part.inline_data.mime_type == "audio/webm"
+
+
+def test_transcribe_strips_whitespace_and_allows_empty():
+    assert llm.transcribe(b"x", "audio/webm", client=FakeGemini(json.dumps({"text": "  hi \n"}))) == "hi"
+    assert llm.transcribe(b"x", "audio/webm", client=FakeGemini(json.dumps({"text": ""}))) == ""
+
+
+@pytest.mark.parametrize("bad", ["not json", json.dumps({"words": "hi"}), json.dumps({"text": 5}), None])
+def test_transcribe_raises_on_bad_output(bad):
+    with pytest.raises(llm.TranscriptionError):
+        llm.transcribe(b"x", "audio/webm", client=FakeGemini(bad))

@@ -1,47 +1,45 @@
-# Slice 5: live on Render, QR codes, pilot
+# Slice 6: voice to text
 
-Slices 1-4 are done (plans in git history; Slice 4 is commit 80fc097).
-Still open for you: Slice 2 T5 (three cafe files), Slice 3 T8 (campus
-counseling contact + care reply sign-off), Slice 4 T6 (consent sign-off +
-research team contact).
+Slices 1-5 are done (plans in git history; Slice 5 is commit dcbe8b0). The
+pilot at Hashtag ran.
 
-**A student can:** scan a QR code at Hashtag with their phone, land on the
-live site with the cafe already set, agree to the consent screen and chat.
+**A student can:** tap the mic, speak, see their words appear in the text
+box, fix them if needed, and send them like a typed message.
 
 **Decisions (2026-10-21):**
-- Host: Render, on a Hobby workspace. Render only makes per-request HTTP logs
-  on Pro workspaces and up, so we never get a log of visitor IPs. Railway was
-  ruled out: it logs every visitor IP for 90 days and it cannot be turned
-  off. Like every host, Render's network still sees IPs to deliver the page;
-  what we control is that neither our app nor our logs keep them.
-- Region `singapore` (closest to Pune). Python pinned by `.python-version`.
-- Config lives in `render.yaml` (a Render "Blueprint"), so the start command,
-  including `--no-access-log`, is in git and checked by a test, not typed
-  into a dashboard.
-- Instance `plan: free` (Render's default is paid, so it is set explicitly).
-  A free instance sleeps after about 15 idle minutes and the first visit then
-  takes about a minute. Before the pilot, either switch to the smallest paid
-  instance in the dashboard (about $7/month) or open the site yourself just
-  before students scan.
-- The site is public, so anyone could send huge messages that cost Gemini
-  money. `/chat` rejects messages over 2000 characters, and the text box
-  stops at 2000.
-- QR codes are made by our own script as plain SVG files. Many free QR
-  websites make "dynamic" codes that send students through their own
-  redirect server, which logs the student's IP.
-- Pilot runs at Hashtag only until the other three cafe files exist; the bot
-  knows nothing about cafes without a file.
+- Gender estimation is split out into Slice 7. It needs its own library,
+  consent wording and IRB check; voice to text works without it.
+- Transcription runs on Gemini (same paid-tier key), not faster-whisper. The
+  Render free instance (about 512 MB RAM) is too small for faster-whisper's
+  small model. Paid-tier Gemini does not use content to improve Google
+  products, but Google keeps prompts (now including audio) for a limited
+  period for abuse detection only. Tell the IRB / data officer.
+- The transcript fills the text box; the student edits and presses Send. They
+  see and control what is stored (transcription errors, names said aloud).
+- Transcribe word for word in the language spoken (Hindi-English mixing
+  included), no translation: the emotion dataset needs the student's own words.
+- `POST /transcribe` takes the raw audio as the request body, held in memory
+  only. Not a multipart upload: FastAPI spools uploads over 1 MB to a temp
+  file on disk. The handler takes no `Request` object (same as `/chat`).
+- Limits: recording stops at 60 seconds; the server rejects bodies over 2 MB
+  and audio types not on an allowlist, before calling Gemini.
+- `input_mode` (`text` or `voice`) is saved on the user row; the bot row is
+  always `text`. Editing a transcript before sending keeps it `voice`.
+- The crisis check runs on the transcript through `/chat`, unchanged.
+- Consent goes to `v2-draft` with one new line about recordings.
 
-**Out of scope (later slices):** voice (Slice 6), automatic 60-day deletion.
+**Out of scope (later slices):** gender from voice (Slice 7), automatic
+60-day deletion.
 
 ## Tasks
 
-- [x] **T1 `[CODE]`** PRODUCT.md: record the hosting decision and close that open question.
-- [x] **T2 `[CODE]`** `/chat` rejects messages over 2000 characters; the text box has `maxlength`. Verify: `pytest tests/test_main.py tests/test_frontend.py`.
-- [x] **T3 `[CODE]`** `render.yaml` + `.python-version`. Test: the start command binds `0.0.0.0:$PORT` and keeps `--no-access-log`; plan is `free`; secrets are `sync: false`. Verify: `pytest`.
-- [x] **T4 `[CODE]`** `scripts/make_qr.py <site-url>` writes `qr/<cafe>.svg` for each cafe (needs `pip install -r requirements-dev.txt`). Test: the encoded links are `<site-url>/?cafe=<slug>`.
-- [x] **T5 `[CODE]`** Push to GitHub (the repo is public; history checked for secrets on 2026-10-21, none found).
-- [ ] **T6 `[MANUAL]`** You, about 5 minutes: sign up at render.com with GitHub (Hobby workspace), New > Blueprint > pick this repo, paste the four values from your `.env` when asked, Apply. Send me the `https://....onrender.com` link.
-- [x] **T7 `[VERIFY]`** Live site: page loads, a test chat is saved with `consent_version = v1-draft`, test rows deleted. You check Render's Logs tab shows no IP addresses.
-- [x] **T8 `[CODE]`** Make the QR codes with the live link and commit them.
-- [ ] **T9 `[MANUAL]`** Before any real student: fill the three placeholders and get team sign-off (Slice 3 T8, Slice 4 T6), set a Gemini budget alert in Google Cloud, decide free vs paid instance. Then the pilot: 5 to 10 students at Hashtag.
+- [x] **T1 `[CODE]`** PRODUCT.md: speech-to-text decision, close that open question, architecture diagram, consent `v2-draft` line, roadmap (Slice 6 voice, Slice 7 gender).
+- [x] **T2 `[VERIFY]`** Check the Turso `messages` table has an `input_mode` column (it was made by hand; no code uses it yet). If it is missing, stop and ask.
+- [x] **T3 `[CODE]`** `db.insert_message` takes `input_mode` (default `text`, only `text`/`voice` allowed). Verify: `pytest tests/test_db.py`.
+- [x] **T4 `[CODE]`** `/chat` accepts `input_mode`; the user row stores it, the bot row stores `text`. Verify: `pytest tests/test_main.py`.
+- [x] **T5 `[CODE]`** `llm.transcribe(audio, mime_type)` sends the clip to Gemini with the transcription prompt and returns the text (empty if no speech). Check the google-genai docs for passing audio bytes. Verify: `pytest tests/test_llm.py`.
+- [x] **T6 `[CODE]`** `POST /transcribe`: raw body, 2 MB cap, audio-type allowlist, returns `{"text": ...}`; a Gemini error returns a friendly 502. Never logs audio or text. Verify: `pytest tests/test_main.py`.
+- [x] **T7 `[CODE]`** Consent `v2-draft`: `CONSENT_VERSION` and the page's consent text, with the new line. Verify: `pytest`.
+- [x] **T8 `[CODE]`** Page: mic button, record with the browser's MediaRecorder, stop at 60 s, "Listening…" while transcribing, fill the text box, send `input_mode`. Clear messages for blocked mic or no speech. Verify: `pytest tests/test_frontend.py`.
+- [ ] **T9 `[VERIFY]`** Local run with real Gemini in desktop Chrome, then push; on the live site, record on phone Chrome and Safari (Safari records MP4, not WebM). A test row has `input_mode = voice` and `consent_version = v2-draft`; delete test rows.
+- [ ] **T10 `[MANUAL]`** Team sign-off on the new consent line.
