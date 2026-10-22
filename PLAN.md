@@ -41,5 +41,5 @@ box, fix them if needed, and send them like a typed message.
 - [x] **T6 `[CODE]`** `POST /transcribe`: raw body, 2 MB cap, audio-type allowlist, returns `{"text": ...}`; a Gemini error returns a friendly 502. Never logs audio or text. Verify: `pytest tests/test_main.py`.
 - [x] **T7 `[CODE]`** Consent `v2-draft`: `CONSENT_VERSION` and the page's consent text, with the new line. Verify: `pytest`.
 - [x] **T8 `[CODE]`** Page: mic button, record with the browser's MediaRecorder, stop at 60 s, "Listening…" while transcribing, fill the text box, send `input_mode`. Clear messages for blocked mic or no speech. Verify: `pytest tests/test_frontend.py`.
-- [ ] **T9 `[VERIFY]`** Local run with real Gemini in desktop Chrome, then push; on the live site, record on phone Chrome and Safari (Safari records MP4, not WebM). A test row has `input_mode = voice` and `consent_version = v2-draft`; delete test rows.
+- [x] **T9 `[VERIFY]`** Local run with real Gemini in desktop Chrome, then push; on the live site, record on phone Chrome and Safari (Safari records MP4, not WebM). A test row has `input_mode = voice` and `consent_version = v2-draft`; delete test rows.
 - [ ] **T10 `[MANUAL]`** Team sign-off on the new consent line.
