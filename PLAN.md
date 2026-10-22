@@ -3,6 +3,16 @@
 Slices 1-5 are done (plans in git history; Slice 5 is commit dcbe8b0). The
 pilot at Hashtag ran.
 
+**Still open outside this slice (2026-10-22):**
+- [ ] Campus counseling contact in the care reply (`backend/safety.py` + PRODUCT.md).
+- [ ] Research team contact on the consent screen (`frontend/index.html` + PRODUCT.md).
+- [ ] Team sign-off on the consent text (now `v2-draft`) and the care reply.
+- [ ] Cafe info files for Coffee Nation, Juice Press, Barsha; then `python -m scripts.make_qr https://chatbot-tlju.onrender.com`.
+- [ ] Privacy/IRB checklist in PRODUCT.md (Gemini terms incl. voice clip logging, DPDP, data officer).
+- [ ] Automatic 60-day deletion (promised on the consent screen; not built).
+- [ ] Slice 7: gender from voice (needs IRB check first).
+- [ ] Optional: one automatic retry when Gemini returns a temporary 503.
+
 **A student can:** tap the mic, speak, see their words appear in the text
 box, fix them if needed, and send them like a typed message.
 
